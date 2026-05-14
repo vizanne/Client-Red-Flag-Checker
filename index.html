@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreelanceKit — Client Red Flag Checker</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #FDF6EC;
+    --cream:       #FDF6EC;
+    --warm:        #FFFAF4;
+    --sand:        #F0E6D3;
+    --border:      #e0d4c0;
+    --border2:     #e5ddd0;
+    --text:        #1B2D4F;
+    --muted:       #6B7A99;
+    --amber:       #E8A045;
+    --amber-dk:    #C4832A;
+    --forest:      #1B2D4F;
+    --red:         #D64C3F;
+    --red-light:   #FFF0EE;
+    --green:       #3A7D5C;
+    --green-light: #EDF7F2;
+    --yellow-light:#FFF9E6;
+    --shadow:      rgba(27,45,79,0.10);
+    --radius:      16px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    font-family:'Plus Jakarta Sans', sans-serif;
+    background:var(--bg); color:var(--text);
+    min-height:100vh; max-width:480px;
+    margin:0 auto; padding-bottom:40px;
+  }
+
+  /* ── HEADER ── */
+  .app-header {
+    background:var(--forest);
+    padding:24px 24px 20px;
+    text-align:center;
+    position:relative; overflow:hidden;
+  }
+  .app-header::before { content:''; position:absolute; top:-50px; right:-50px; width:200px; height:200px; border-radius:50%; background:rgba(232,160,69,0.12); }
+  .app-header::after  { content:''; position:absolute; bottom:-30px; left:-20px; width:120px; height:120px; border-radius:50%; background:rgba(232,160,69,0.07); }
+
+  .kit-brand { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; position:relative; }
+  .kit-logo { width:26px; height:26px; background:var(--amber); border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .kit-logo svg { width:14px; height:14px; fill:var(--forest); }
+  .kit-name { font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:700; color:rgba(253,246,236,0.7); letter-spacing:0.08em; text-transform:uppercase; }
+  .kit-divider { width:1px; height:13px; background:rgba(253,246,236,0.25); }
+  .kit-tool { font-family:'Plus Jakarta Sans',sans-serif; font-size:12px; font-weight:500; color:rgba(253,246,236,0.55); }
+
+  .header-title { font-family:'Fraunces',serif; font-size:26px; font-weight:900; color:var(--cream); line-height:1.15; position:relative; }
+  .header-title span { color:var(--amber); }
+  .header-sub { font-size:13px; color:rgba(253,246,236,0.55); margin-top:6px; position:relative; font-weight:400; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { background:#162440; padding:10px 20px; display:flex; align-items:center; gap:12px; }
+  .progress-bar-bg { flex:1; height:5px; background:rgba(255,255,255,0.1); border-radius:99px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--amber); border-radius:99px; transition:width 0.4s cubic-bezier(.4,0,.2,1); width:0%; }
+  .progress-label { font-size:11px; font-weight:700; color:rgba(253,246,236,0.5); white-space:nowrap; min-width:44px; text-align:right; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  /* ── SHARED CARD ── */
+  .card { background:var(--warm); border-radius:var(--radius); border:1.5px solid var(--border); box-shadow:0 2px 10px var(--shadow); }
+
+  /* ── SECTION TITLE ── */
+  .section-title { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding:18px 20px 8px; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  /* ── INTRO ── */
+  .intro-wrap { padding:0 20px; }
+  .intro-hero { margin-top:16px; background:var(--forest); border-radius:var(--radius); padding:24px 20px; position:relative; overflow:hidden; box-shadow:0 4px 20px var(--shadow); }
+  .intro-hero::before { content:''; position:absolute; top:-40px; right:-40px; width:130px; height:130px; background:rgba(232,160,69,0.14); border-radius:50%; }
+  .intro-emoji { font-size:40px; margin-bottom:10px; position:relative; }
+  .intro-hero h2 { font-family:'Fraunces',serif; font-size:22px; font-weight:900; color:var(--cream); line-height:1.2; position:relative; margin-bottom:8px; }
+  .intro-hero p { font-size:13px; color:rgba(253,246,236,0.6); line-height:1.6; position:relative; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .intro-list-card { margin-top:12px; padding:4px 0; }
+  .intro-list-item { display:flex; align-items:center; gap:10px; padding:11px 18px; border-bottom:1px solid var(--border2); font-size:13px; color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; }
+  .intro-list-item:last-child { border-bottom:none; }
+  .intro-check { width:20px; height:20px; border-radius:50%; background:var(--green-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:10px; color:var(--green); font-weight:700; }
+
+  .btn-primary { display:block; width:100%; background:var(--amber); color:var(--forest); border:none; border-radius:50px; padding:16px; margin-top:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; font-weight:700; cursor:pointer; transition:background 0.15s, transform 0.12s; text-align:center; }
+  .btn-primary:active { background:var(--amber-dk); transform:scale(0.98); }
+
+  /* ── QUESTION ── */
+  .question-wrap { padding:0 20px; }
+  .category-tag { display:inline-block; background:var(--sand); border:1px solid var(--border); color:var(--muted); font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:4px 11px; border-radius:30px; margin:16px 0 10px; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .question-card { padding:20px 18px 18px; }
+  .q-number { font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .q-text { font-family:'Fraunces',serif; font-size:20px; font-weight:700; line-height:1.3; color:var(--text); margin-bottom:12px; }
+  .q-why { font-size:12px; color:var(--muted); line-height:1.6; background:var(--sand); border-radius:10px; padding:10px 13px; margin-bottom:18px; border-left:3px solid var(--border); font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .answer-buttons { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .btn-ans { border:1.5px solid var(--border); border-radius:12px; padding:14px 10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.15s; background:var(--bg); display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .btn-ans:active { transform:scale(0.96); }
+  .btn-ans-icon { font-size:20px; }
+
+  .btn-yes { color:var(--green); }
+  .btn-yes.selected, .btn-yes:hover { background:var(--green-light); border-color:var(--green); }
+  .btn-no { color:var(--red); }
+  .btn-no.selected, .btn-no:hover { background:var(--red-light); border-color:var(--red); }
+  .btn-unsure { grid-column:1 / -1; flex-direction:row; justify-content:center; font-size:13px; color:var(--muted); padding:11px; }
+  .btn-unsure.selected, .btn-unsure:hover { background:var(--yellow-light); border-color:var(--amber); color:var(--amber-dk); }
+
+  .score-strip { display:flex; gap:5px; margin-top:16px; flex-wrap:wrap; }
+  .score-dot { height:6px; border-radius:3px; flex:1; min-width:18px; background:var(--border); transition:background 0.3s; }
+  .score-dot.red    { background:var(--red); }
+  .score-dot.yellow { background:var(--amber); }
+  .score-dot.green  { background:var(--green); }
+
+  .nav-row { display:flex; gap:10px; margin-top:12px; }
+  .btn-back { background:none; border:1.5px solid var(--border); border-radius:50px; padding:12px 18px; font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.15s; flex-shrink:0; }
+  .btn-back:active { background:var(--sand); }
+  .btn-next { flex:1; background:var(--forest); color:var(--cream); border:none; border-radius:50px; padding:13px 18px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.15s; opacity:0.3; pointer-events:none; }
+  .btn-next.enabled { opacity:1; pointer-events:auto; }
+  .btn-next.enabled:active { transform:scale(0.97); }
+
+  /* ── RESULT ── */
+  .result-wrap { padding:0 20px; }
+  .score-card { margin-top:16px; background:var(--forest); border-radius:var(--radius); padding:22px 20px 18px; position:relative; overflow:hidden; box-shadow:0 4px 20px var(--shadow); }
+  .score-card::before { content:''; position:absolute; top:-40px; right:-40px; width:130px; height:130px; background:rgba(232,160,69,0.14); border-radius:50%; }
+  .score-card-label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:rgba(253,246,236,0.5); margin-bottom:4px; position:relative; font-family:'Plus Jakarta Sans',sans-serif; }
+  .score-number { font-family:'Fraunces',serif; font-size:52px; font-weight:900; color:var(--cream); letter-spacing:-1px; line-height:1; position:relative; }
+  .score-number.danger  { color:#F07070; }
+  .score-number.caution { color:var(--amber); }
+  .score-number.safe    { color:#5BC891; }
+
+  .score-verdict { font-family:'Fraunces',serif; font-size:17px; font-weight:700; color:var(--cream); margin-top:8px; position:relative; }
+  .score-summary { font-size:12px; color:rgba(253,246,236,0.55); margin-top:6px; line-height:1.6; position:relative; font-family:'Plus Jakarta Sans',sans-serif; }
+  .score-bar-wrap { margin-top:14px; position:relative; }
+  .score-bar-track { height:7px; background:rgba(255,255,255,0.1); border-radius:99px; overflow:hidden; }
+  .score-bar-fill { height:100%; border-radius:99px; transition:width 0.8s cubic-bezier(0.4,0,0.2,1); }
+  .score-bar-fill.danger  { background:#F07070; }
+  .score-bar-fill.caution { background:var(--amber); }
+  .score-bar-fill.safe    { background:#5BC891; }
+  .score-bar-labels { display:flex; justify-content:space-between; margin-top:5px; font-size:9px; color:rgba(253,246,236,0.35); font-weight:600; letter-spacing:0.5px; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .flags-card { padding:4px 0; }
+  .flag-row { display:flex; gap:12px; align-items:flex-start; padding:12px 18px; border-bottom:1px solid var(--border2); }
+  .flag-row:last-child { border-bottom:none; }
+  .flag-pill { flex-shrink:0; font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:99px; margin-top:2px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .flag-pill.red    { background:var(--red-light); color:var(--red); }
+  .flag-pill.yellow { background:var(--yellow-light); color:var(--amber-dk); }
+  .flag-pill.green  { background:var(--green-light); color:var(--green); }
+  .flag-body { flex:1; }
+  .flag-name { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .flag-detail { font-size:12px; color:var(--muted); line-height:1.5; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .advice-card { background:var(--forest); border-radius:var(--radius); padding:18px; box-shadow:0 4px 20px var(--shadow); }
+  .advice-title { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--amber); margin-bottom:12px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .advice-item { display:flex; gap:10px; font-size:13px; color:rgba(253,246,236,0.65); line-height:1.55; margin-bottom:10px; font-family:'Plus Jakarta Sans',sans-serif; }
+  .advice-item:last-child { margin-bottom:0; }
+  .advice-icon { flex-shrink:0; font-size:14px; margin-top:1px; }
+
+  .btn-reset { display:block; width:100%; background:none; border:1.5px solid var(--border); border-radius:50px; padding:14px; font-family:'Plus Jakarta Sans',sans-serif; font-size:15px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.15s; text-align:center; margin-top:10px; }
+  .btn-reset:active { background:var(--sand); }
+  .share-note { text-align:center; font-size:11px; color:var(--muted); margin-top:14px; line-height:1.5; font-family:'Plus Jakarta Sans',sans-serif; }
+
+  .screen { display:none; }
+  .screen.active { display:block; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="kit-brand">
+    <div class="kit-logo">
+      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M2 3h12v2H2V3zm0 4h8v2H2V7zm0 4h10v2H2v-2z"/></svg>
+    </div>
+    <span class="kit-name">FreelanceKit</span>
+    <div class="kit-divider"></div>
+    <span class="kit-tool">Red Flag Checker</span>
+  </div>
+  <div class="header-title">Client Red <span>Flag Checker</span></div>
+  <div class="header-sub">Know before you sign — 10 quick questions</div>
+</div>
+
+<div class="progress-wrap" id="progressWrap" style="display:none;">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 10</div>
+</div>
+
+<!-- INTRO -->
+<div class="screen active" id="screenIntro">
+  <div class="intro-wrap">
+    <div class="intro-hero">
+      <div class="intro-emoji">🚩</div>
+      <h2>Is this client worth your time?</h2>
+      <p>Answer 10 yes/no questions about a potential client. We'll score their red flags and give you a clear verdict.</p>
+    </div>
+    <div class="card intro-list-card">
+      <div class="intro-list-item"><div class="intro-check">✓</div>Takes about 60 seconds</div>
+      <div class="intro-list-item"><div class="intro-check">✓</div>Covers communication, money, scope &amp; more</div>
+      <div class="intro-list-item"><div class="intro-check">✓</div>Get a verdict + personalised advice</div>
+      <div class="intro-list-item"><div class="intro-check">✓</div>Your answers are never saved or shared</div>
+    </div>
+    <button class="btn-primary" onclick="startChecker()">Start Checking →</button>
+  </div>
+</div>
+
+<!-- QUESTION -->
+<div class="screen" id="screenQuestion">
+  <div class="question-wrap">
+    <div class="category-tag" id="qCategory">Category</div>
+    <div class="card question-card">
+      <div class="q-number" id="qNumber">Question 1 of 10</div>
+      <div class="q-text" id="qText">Question goes here</div>
+      <div class="q-why" id="qWhy">Explanation</div>
+      <div class="answer-buttons">
+        <button class="btn-ans btn-yes" onclick="answer('yes')">
+          <span class="btn-ans-icon">✅</span>Yes
+        </button>
+        <button class="btn-ans btn-no" onclick="answer('no')">
+          <span class="btn-ans-icon">❌</span>No
+        </button>
+        <button class="btn-ans btn-unsure" onclick="answer('unsure')">
+          🤷 Not sure / Doesn't apply
+        </button>
+      </div>
+      <div class="score-strip" id="scoreDots"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn-back" id="btnBack" onclick="goBack()">← Back</button>
+      <button class="btn-next" id="btnNext" onclick="goNext()">Next question →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="screenResult">
+  <div class="result-wrap">
+    <div class="score-card">
+      <div class="score-card-label">Red Flag Score</div>
+      <div class="score-number" id="resultScore">0/10</div>
+      <div class="score-verdict" id="resultVerdict">Verdict</div>
+      <div class="score-summary" id="resultSummary">Summary</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-track">
+          <div class="score-bar-fill" id="resultBar" style="width:0%"></div>
+        </div>
+        <div class="score-bar-labels"><span>Safe</span><span>Caution</span><span>Danger</span></div>
+      </div>
+    </div>
+
+    <div class="section-title" id="flagsSectionTitle">🚩 Red Flags Found</div>
+    <div class="card flags-card"><div id="flagsList"></div></div>
+
+    <div class="section-title">💡 Our Advice</div>
+    <div class="advice-card">
+      <div class="advice-title">What to do next</div>
+      <div id="adviceList"></div>
+    </div>
+
+    <button class="btn-primary" onclick="resetChecker()" style="margin-top:14px;">Check Another Client</button>
+    <button class="btn-reset" onclick="resetChecker()">← Start Over</button>
+    <div class="share-note">Screenshot your result to save or share it!</div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    category:"💬 Communication",
+    text:"Did the client take more than 48 hours to reply to your initial message?",
+    why:"Slow communication now = slow approvals and late payments later. How they respond before they're paying predicts how they'll respond after.",
+    redFlagAnswer:"yes", weight:1,
+    flagLabel:"Slow responder",
+    flagDetail:"Delayed pre-hire replies strongly predict delays during the project.",
+    goodLabel:"Communicates quickly",
+    goodDetail:"Fast initial response is a great sign for how the project will run.",
+  },
+  {
+    category:"💬 Communication",
+    text:"Did the client have trouble clearly explaining what they want?",
+    why:"Vague briefs lead to endless revisions and scope creep. Clarity upfront saves you from chaos later.",
+    redFlagAnswer:"yes", weight:2,
+    flagLabel:"Unclear brief",
+    flagDetail:"If they can't explain it now, they won't be able to approve it later. Expect scope creep.",
+    goodLabel:"Clear on requirements",
+    goodDetail:"They know what they want — much easier to deliver and get sign-off.",
+  },
+  {
+    category:"💰 Money",
+    text:"Did the client push back on your rate or try to negotiate you down significantly?",
+    why:"Clients who fight your price before starting often resent paying invoices once it's done.",
+    redFlagAnswer:"yes", weight:2,
+    flagLabel:"Rate negotiator",
+    flagDetail:"Heavy rate negotiation often leads to payment delays or disputes.",
+    goodLabel:"Accepted your rate",
+    goodDetail:"Paying your rate without drama signals a healthy client relationship.",
+  },
+  {
+    category:"💰 Money",
+    text:"Did the client refuse to pay a deposit or upfront fee?",
+    why:"A client who won't pay anything upfront is a serious red flag. No deposit = no protection for you.",
+    redFlagAnswer:"yes", weight:3,
+    flagLabel:"Refused deposit",
+    flagDetail:"This is a major red flag. Always require at least 25–50% upfront before any work begins.",
+    goodLabel:"Agreed to deposit",
+    goodDetail:"Willingness to pay a deposit shows they're serious and trustworthy.",
+  },
+  {
+    category:"📋 Scope",
+    text:"Did the client use phrases like 'it should be simple' or 'it won't take you long'?",
+    why:"Clients who underestimate the work before it starts are the same ones who balk at your invoice when it's done.",
+    redFlagAnswer:"yes", weight:2,
+    flagLabel:"'It should be simple'",
+    flagDetail:"This phrase is a classic setup for scope disputes. They've already decided it should be cheap.",
+    goodLabel:"Realistic about the work",
+    goodDetail:"Clients who understand the effort involved respect your time and rates.",
+  },
+  {
+    category:"📋 Scope",
+    text:"Did the client ask for free samples, free strategy, or a 'test project' before signing anything?",
+    why:"Real clients sign contracts before work begins. 'Test' projects are often a way to get free work.",
+    redFlagAnswer:"yes", weight:3,
+    flagLabel:"Wants free work first",
+    flagDetail:"Asking for samples or strategy before a contract is a common way bad clients extract free labor.",
+    goodLabel:"No free work requested",
+    goodDetail:"They're willing to start with a proper contract — the right way to do business.",
+  },
+  {
+    category:"⏰ Timeline",
+    text:"Is the client's deadline unrealistic — like wanting weeks of work done in days?",
+    why:"Rush timelines without rush rates mean you work twice as hard for the same money.",
+    redFlagAnswer:"yes", weight:1,
+    flagLabel:"Unrealistic deadline",
+    flagDetail:"Rush timelines with no rush rate is a setup for burnout. Charge accordingly or pass.",
+    goodLabel:"Reasonable timeline",
+    goodDetail:"A realistic deadline means a calmer, higher-quality project for everyone.",
+  },
+  {
+    category:"🤝 Relationship",
+    text:"Did the client mention bad experiences with multiple past freelancers?",
+    why:"Everyone has one bad experience — that's normal. Constantly blaming past freelancers is a red flag.",
+    redFlagAnswer:"yes", weight:1,
+    flagLabel:"Blames past freelancers",
+    flagDetail:"Multiple bad experiences with others? You might be next. Ask why past relationships failed.",
+    goodLabel:"Positive past experiences",
+    goodDetail:"Good history with other freelancers is a reassuring sign.",
+  },
+  {
+    category:"🤝 Relationship",
+    text:"Does the client expect you to reply immediately — nights, weekends, or outside business hours?",
+    why:"Clients who ignore your working hours early on will ignore your boundaries throughout the project.",
+    redFlagAnswer:"yes", weight:2,
+    flagLabel:"No boundaries respected",
+    flagDetail:"Expecting 24/7 availability is a recipe for burnout. Set clear hours in your contract.",
+    goodLabel:"Respects your hours",
+    goodDetail:"They understand you have set working hours — a healthy foundation.",
+  },
+  {
+    category:"📄 Paperwork",
+    text:"Is the client resistant to signing a written contract or formal agreement?",
+    why:"Any client who avoids paperwork is either inexperienced or hiding something. Never work without one.",
+    redFlagAnswer:"yes", weight:3,
+    flagLabel:"Avoids contracts",
+    flagDetail:"This is critical. No contract = no protection. Never start work without a signed agreement.",
+    goodLabel:"Happy to sign a contract",
+    goodDetail:"A client who embraces contracts is professional and serious.",
+  },
+];
+
+let currentQ = 0;
+let answers  = new Array(questions.length).fill(null);
+
+function startChecker() {
+  document.getElementById('screenIntro').classList.remove('active');
+  document.getElementById('screenQuestion').classList.add('active');
+  document.getElementById('progressWrap').style.display = 'flex';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('qCategory').textContent = q.category;
+  document.getElementById('qNumber').textContent   = `Question ${currentQ + 1} of ${questions.length}`;
+  document.getElementById('qText').textContent     = q.text;
+  document.getElementById('qWhy').textContent      = q.why;
+  document.querySelectorAll('.btn-ans').forEach(b => b.classList.remove('selected'));
+  if (answers[currentQ] !== null) { highlightAnswer(answers[currentQ]); enableNext(); }
+  else disableNext();
+  document.getElementById('btnBack').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  updateProgress();
+  renderDots();
+}
+
+function answer(val) {
+  answers[currentQ] = val;
+  highlightAnswer(val);
+  enableNext();
+  renderDots();
+}
+
+function highlightAnswer(val) {
+  document.querySelectorAll('.btn-ans').forEach(b => b.classList.remove('selected'));
+  if (val === 'yes')    document.querySelector('.btn-yes').classList.add('selected');
+  if (val === 'no')     document.querySelector('.btn-no').classList.add('selected');
+  if (val === 'unsure') document.querySelector('.btn-unsure').classList.add('selected');
+}
+
+function enableNext()  { document.getElementById('btnNext').classList.add('enabled'); }
+function disableNext() { document.getElementById('btnNext').classList.remove('enabled'); }
+
+function goNext() {
+  if (answers[currentQ] === null) return;
+  if (currentQ < questions.length - 1) { currentQ++; renderQuestion(); }
+  else showResult();
+}
+
+function goBack() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function updateProgress() {
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('progressFill').style.width = (answered / questions.length * 100) + '%';
+  document.getElementById('progressLabel').textContent = `${answered} / ${questions.length}`;
+}
+
+function renderDots() {
+  const c = document.getElementById('scoreDots');
+  c.innerHTML = '';
+  questions.forEach((q, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'score-dot';
+    if (answers[i] !== null) {
+      dot.classList.add(
+        answers[i] === 'yes' && q.redFlagAnswer === 'yes' ? 'red' :
+        answers[i] === 'no'  && q.redFlagAnswer === 'yes' ? 'green' : 'yellow'
+      );
+    }
+    c.appendChild(dot);
+  });
+}
+
+function computeScore() {
+  let score = 0, max = 0;
+  questions.forEach((q, i) => {
+    max += q.weight;
+    if (answers[i] === 'yes')    score += q.weight;
+    if (answers[i] === 'unsure') score += q.weight * 0.5;
+  });
+  return Math.round((score / max) * 10);
+}
+
+function showResult() {
+  const score = computeScore();
+  document.getElementById('screenQuestion').classList.remove('active');
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('screenResult').classList.add('active');
+
+  const scoreEl   = document.getElementById('resultScore');
+  const verdictEl = document.getElementById('resultVerdict');
+  const summaryEl = document.getElementById('resultSummary');
+  const barEl     = document.getElementById('resultBar');
+
+  scoreEl.textContent = score + '/10';
+  barEl.style.width   = (score / 10 * 100) + '%';
+
+  let tier, advice;
+  if (score >= 7) {
+    tier = 'danger';
+    verdictEl.textContent = '🚨 Danger — Walk Away';
+    summaryEl.textContent = 'This client is showing serious red flags. Taking this project puts your time, money, and sanity at risk.';
+    advice = [
+      { icon:'🚫', text:"Politely decline. Say you're fully booked — no explanation needed." },
+      { icon:'💬', text:"If you must proceed, require 100% payment upfront and a signed contract before a single minute of work." },
+      { icon:'📋', text:"Get scope, timeline, and deliverables agreed in writing before committing to anything." },
+      { icon:'🧘', text:"A client who causes stress before the project starts causes 10× the stress once money is involved." },
+    ];
+  } else if (score >= 4) {
+    tier = 'caution';
+    verdictEl.textContent = '⚠️ Caution — Proceed Carefully';
+    summaryEl.textContent = 'There are yellow and red flags here. This could work out — but you need very clear boundaries before starting.';
+    advice = [
+      { icon:'📄', text:"Get every detail in a contract: scope, deliverables, payment schedule, revision limits." },
+      { icon:'💰', text:"Require a deposit of at least 50% before any work begins." },
+      { icon:'📅', text:"Set clear deadlines for both sides. Both parties have responsibilities." },
+      { icon:'🔒', text:"Define exactly what's included and what costs extra. Scope creep is your biggest risk here." },
+    ];
+  } else {
+    tier = 'safe';
+    verdictEl.textContent = '✅ Looks Good — Go For It!';
+    summaryEl.textContent = 'Mostly green flags detected. Still use a contract (always!), but this looks like a healthy professional relationship.';
+    advice = [
+      { icon:'🤝', text:"Still use a written contract — it protects both of you and sets professional expectations." },
+      { icon:'💰', text:"Collect your standard deposit before starting — even with great clients, it's good practice." },
+      { icon:'📣', text:"Ask them for a testimonial if the project goes well. Good clients know other good clients!" },
+      { icon:'🎉', text:"Great clients are worth nurturing. Deliver your best work and build a long-term relationship." },
+    ];
+  }
+
+  scoreEl.className = 'score-number ' + tier;
+  barEl.className   = 'score-bar-fill ' + tier;
+
+  const flagsList = document.getElementById('flagsList');
+  flagsList.innerHTML = '';
+  questions.forEach((q, i) => {
+    const a = answers[i];
+    let type = null, label = '', detail = '';
+    if (a === 'yes' && q.redFlagAnswer === 'yes')     { type='red';    label=q.flagLabel; detail=q.flagDetail; }
+    else if (a === 'unsure')                           { type='yellow'; label='⚠️ Unclear: '+q.flagLabel; detail="You weren't sure — worth getting clarity before you commit."; }
+    else if (a === 'no' && q.redFlagAnswer === 'yes') { type='green';  label=q.goodLabel; detail=q.goodDetail; }
+    if (!type) return;
+    const row = document.createElement('div');
+    row.className = 'flag-row';
+    row.innerHTML = `
+      <span class="flag-pill ${type}">${type==='red'?'Red':type==='yellow'?'Maybe':'Good'}</span>
+      <div class="flag-body">
+        <div class="flag-name">${label}</div>
+        <div class="flag-detail">${detail}</div>
+      </div>`;
+    flagsList.appendChild(row);
+  });
+
+  document.getElementById('flagsSectionTitle').textContent =
+    score >= 7 ? '🚩 Red Flags Found' : score >= 4 ? '⚠️ Mixed Signals' : '✅ Breakdown';
+
+  const adviceList = document.getElementById('adviceList');
+  adviceList.innerHTML = '';
+  advice.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'advice-item';
+    el.innerHTML = `<span class="advice-icon">${item.icon}</span><span>${item.text}</span>`;
+    adviceList.appendChild(el);
+  });
+
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+
+function resetChecker() {
+  currentQ = 0;
+  answers  = new Array(questions.length).fill(null);
+  document.getElementById('screenResult').classList.remove('active');
+  document.getElementById('screenIntro').classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+</script>
+</body>
+</html>
